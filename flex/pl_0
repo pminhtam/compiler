@@ -1,0 +1,51 @@
+
+DIGIT    [0-9]
+ID       [a-zA-Z][A-Za-z0-9]*
+
+%%
+
+
+
+
+{DIGIT}+    {
+        printf( "NUMBER: %s\n", yytext);
+        }
+
+BEGIN|CALL|CONST|DO|ELSE|END|FOR|IF|ODD|PROCEDURE|PROGRAM|THEN|TO|VAR|WHILE     {
+        printf( "%s\n", yytext );
+        }
+
+
+{ID}        printf( "IDENT: %s\n", yytext );
+"+"       printf( "PLUS\n");
+"-"       printf( "MINUS\n");
+"*"       printf( "TIMES\n");
+"/"       printf( "SLASH\n");
+"<>"      printf( "NEQ\n");
+"<="      printf( "LEQ\n");
+"<"       printf( "LSS\n");
+">="      printf( "GEQ\n");
+">"       printf( "GRT\n");
+":="      printf( "ASSIGN\n");
+"%"       printf( "PERCENT\n");
+"="       printf( "EQU\n");
+"("       printf( "LPARENT\n");
+")"       printf( "RPARENT\n");
+"["       printf( "LBRACK\n");
+"]"       printf( "RBRACK\n");
+"."       printf( "PERIOD\n");
+","       printf( "COMMA\n");
+";"       printf( "SEMICOLON\n");
+. ;      
+%%
+
+int main( int argc, char **argv )
+{
+++argv, --argc;  /* skip over program name */
+if ( argc > 0 )
+        yyin = fopen( argv[0], "r" );
+else
+        yyin = stdin;
+
+yylex();
+}

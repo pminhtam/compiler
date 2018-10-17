@@ -1,0 +1,8 @@
+    Program     Vidu;
+/*
+Day la cai comment 
+**
+*/
+Begin
+   X := 10
+End.
