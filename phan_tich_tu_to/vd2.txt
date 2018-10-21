@@ -1,5 +1,5 @@
 Program Example2; 
-Var a,b,c;
+Var asdfsdfvdfvfdfdbdfvcvdsxcdsdsdxdscvf,b,c;
 Procedure gcd(a; b; var d);  
 	Begin    
 	   While a <> b do

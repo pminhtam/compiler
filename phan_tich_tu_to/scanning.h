@@ -42,7 +42,7 @@ char getCh(ifstream& sfile){
 		sfile>>c;
 		column++;
 		
-		if(c == '\n'){
+		while(c == '\n' && !sfile.eof()){
 			line++;
 			column++;
 			sfile>>c;
@@ -52,6 +52,7 @@ char getCh(ifstream& sfile){
 		return 0;
 	}
 	char low_c =toupper(c);
+//	cout<<low_c<<endl;
 	return low_c;
 }
 

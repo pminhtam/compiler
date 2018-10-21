@@ -267,7 +267,7 @@ int main(int argc, char **args){
 		token = getToken(sfile);
 		tokens.push_back(token);
 		
-	}while(token!=NONE);q
+	}while(token!=NONE);
 	
 	show_token();
 
