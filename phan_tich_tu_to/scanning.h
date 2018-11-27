@@ -1,7 +1,9 @@
+
 #include<iostream>
 #include<fstream>
 #include<string>
 #include<vector>
+#include <stdlib.h>
 
 
 using namespace std;
@@ -19,15 +21,14 @@ string key_words[] = {"BEGIN", "CALL", "CONST", "DO", "ELSE", "END", "FOR", "IF"
 string type_words[] = {"NONE", "IDENT", "NUMBER",
 	"BEGIN", "CALL", "CONST", "DO",  "ELSE", "END", "FOR", "IF", "ODD",
 	"PROCEDURE", "PROGRAM", "THEN", "TO", "VAR", "WHILE",
-	"PLUS", "MINUS", "TIMES", "SLASH", "EQU", "NEQ", "LSS", "LEQ", "GRT", "GEQ", "LPARENT",
-	 "RPARENT", "LBRACK", "RBRACK", "PERIOD", "COMMA", "SEMICOLON",  "ASSIGN", "PERCENT","COMMENT"};
+	"+", "-", "*", "/", "==", "<>", "<", "<=", ">", ">=", "(",
+	 ")", "[", "]", ".", ",", ";",  ":=", "%","COMMENT"};
 	 
 	 
-// comment dang   /* ... */
 
 
 int key_words_len = 15;
-int line=0,column=0;
+int line=1,column=0;
 char ch = ' ';
 int max_num = 9;
 int max_ident = 9;
@@ -35,6 +36,19 @@ int max_ident = 9;
 vector<TokenType> tokens;		//chua danh sach cac token cua chuong trinh
 vector<string> idents;			// danh sach cac ten bien
 vector<int> numbers;			// sanh sach so
+vector<int> columns;
+vector<int> lines;
+
+char getCh(ifstream& sfile);
+int check_letter(char ch);
+int check_digit(char ch);
+TokenType test_ident(string s);
+TokenType test_number(string s);
+TokenType getToken(ifstream& sfile);
+void show_token();
+void get_tokens(char* file_name);
+
+
 
 char getCh(ifstream& sfile){
 	char c;
@@ -42,28 +56,35 @@ char getCh(ifstream& sfile){
 		sfile>>c;
 		column++;
 		
+//		if(c == '\n'){
+//			cout<<"   "<<endl;
+//		}
+		/*
 		while(c == '\n' && !sfile.eof()){
 			line++;
-			column++;
+			column=0;
 			sfile>>c;
 		}
+		*/
 	}
 	else{
 		return 0;
 	}
-	char low_c =toupper(c);
-//	cout<<low_c<<endl;
-	return low_c;
+	char upper_c =toupper(c);
+//	cout<<upper_c<<"   ";
+	return upper_c;
 }
 
 
 int check_letter(char ch){
+//	cout<<"letter:  "<<ch<<endl;
 	return isalpha(ch);
 }
 
 int check_digit(char ch){
 	return isdigit(ch);
 }
+
 
 TokenType test_ident(string s){
 	int i=0;
@@ -77,7 +98,7 @@ TokenType test_ident(string s){
 	// kiem tra do dai xau
 	string s_cut;
 	if(s.length() > max_ident){
-		for(i=0;i<max_ident;i++){
+		for(i=0;i<max_ident;i++){		// cat lay 9 ky tu
 			s_cut+=s[i];
 		}
 		idents.push_back(s_cut);
@@ -94,7 +115,8 @@ TokenType test_number(string s){
 	int L = s.length();
 	
 	if(L>max_num){
-		cout<<"So qua lon"<<endl;
+		cout<<"\n Loi:  So qua lon"<<"  dong:  "<<line<<"  cot:  "<<column<<endl;
+		exit(EXIT_SUCCESS);
 		return NONE;
 	}
 	
@@ -117,13 +139,21 @@ TokenType test_number(string s){
 }
 
 TokenType getToken(ifstream& sfile){
-	while(ch == ' ' || ch==9){
+	get_token:
+	
+	while(ch == ' ' || ch==9 || ch =='\n'){
+		if(ch=='\n'){
+			line++;
+			column=0;
+		}
 		ch = getCh(sfile);
 	}
+	
 	string s;
 	if(check_letter(ch)){
 		s+=ch;
 		ch = getCh(sfile);
+//		cout<<"ident"<<ch<<endl;
 		while(check_letter(ch) || check_digit(ch)){
 			s+=ch;
 			ch = getCh(sfile);
@@ -190,22 +220,7 @@ TokenType getToken(ifstream& sfile){
 	
 	else if(ch == '/'){
 		ch = getCh(sfile);
-		if(ch == '*'){
-			comment:
-			ch = getCh(sfile);
-			while(ch != '*'){
-				
-				ch = getCh(sfile);
-			}
-			ch = getCh(sfile);
-			if(ch == '/'){
-				ch = getCh(sfile);
-				return COMMENT;
-			}
-			else{
-				goto comment;
-			}
-		}
+
 		return SLASH;
 	}
 	else if(ch == '%'){
@@ -220,6 +235,26 @@ TokenType getToken(ifstream& sfile){
 	
 	else if(ch == '('){
 		ch = getCh(sfile);
+		
+		if(ch == '*'){
+			comment:
+			ch = getCh(sfile);
+			while(ch != '*'){
+				
+				ch = getCh(sfile);
+			}
+			ch = getCh(sfile);
+			if(ch == ')'){
+				ch = getCh(sfile);
+//				cout<<"Het comment"<<endl;
+				goto get_token;
+			}
+			else{
+				goto comment;
+			}
+		}
+		
+		
 		return LPARENT;
 	}
 		
@@ -250,11 +285,16 @@ TokenType getToken(ifstream& sfile){
 	
 	else if(ch == ';'){
 		ch = getCh(sfile);
+//		cout<<"SEMICOLON"<<endl;
 		return SEMICOLON;
 	}
 	
 	else{
 //		cout<<"het  "<<(int)ch<<endl;
+		if(!sfile.eof()){
+			cout<<"Xuat hien ky tu la hoac file bi loi"<<"  dong:  "<<line<<"  cot:  "<<column<<endl;
+			exit(EXIT_SUCCESS);
+		}
 		return NONE;
 	}
 }
@@ -279,6 +319,23 @@ void show_token(){
 			cout<<type_words[(int) tokens[i]]<<endl;
 		}
 	}
+}
+
+
+void get_tokens(char* file_name){
+	ifstream sfile;
+
+	sfile.open(file_name,ios_base::in);
+	sfile.unsetf(ios_base::skipws);	
+	TokenType token;
+
+	do{
+		token = getToken(sfile);
+		tokens.push_back(token);
+		lines.push_back(line);
+		columns.push_back(column);
+		
+	}while(token!=NONE);
 }
 
 

@@ -8,7 +8,10 @@ Procedure gcd(a; b; var d);
 	  d := b;
 	End;
 Begin  
-   Call Readln(a);	Call Readln(b);
-	Call gcd(a,b,c);
-	Call Writeln(c);
-End
+   Call Readln(a);	Call Readln(b);;;;;;
+X := 123;
+Y := 45;
+Z := 111;
+	Call IDENT(a,b,c);;;;
+	Call Writeln(c)
+End.
