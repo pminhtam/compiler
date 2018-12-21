@@ -1,0 +1,18 @@
+program tung;
+const a = 10, max = 200;
+var x, y[10], z;
+
+procedure tung(x; var y; c);
+var m, n;
+begin
+    m := 20;
+end;
+
+procedure abcd(u; v; u); // dong 11
+begin
+    u := v + 10;
+end;
+
+begin
+end.
+    (* Dong 11: Trung ten *)

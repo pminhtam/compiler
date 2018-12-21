@@ -1,0 +1,6 @@
+program tung;
+const a = 10;
+var x, y[100];
+procedure abcd;
+begin
+end;

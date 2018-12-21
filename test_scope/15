@@ -1,0 +1,40 @@
+program tung;
+const a = 10, max = 200;
+var x, y[10], z;
+
+procedure tung(x; var y; c);
+var m, n;
+begin
+    m := 20;
+end;
+
+procedure abcd(u; v);
+begin
+    u := v + 10;
+end;
+
+begin
+    y[20 * 200] := 5 * (-8 + 7 + x * y[5 * 3]);
+    call tung(5, 2, 200);
+    call abcd(5, 4);
+    begin
+        ;;
+    end;
+    if x = 20 then 
+        if odd y[3 * 2] then
+            z := 100
+        else 
+        begin
+            z := 22;
+            x := 11;
+        end;
+
+    while y[0] <> 6 do 
+        x := x + 1;
+
+    for n := 0 to 10 do
+        begin
+        end;
+end.
+
+(* Dong 18: RVALUE, LVALUE *)

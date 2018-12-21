@@ -1,0 +1,5 @@
+program tung;
+var x, y[100], z[20];
+const x = 20;
+begin
+end.

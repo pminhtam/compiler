@@ -1,0 +1,11 @@
+program tung;
+const max = 100, b = 5;
+var x, y, a[10], z;
+
+procedure tung(u; var v);
+begin
+	call tung(5, max);
+end;
+
+begin
+end.

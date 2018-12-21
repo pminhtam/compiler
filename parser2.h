@@ -5,6 +5,9 @@
 #include "scanning.h"
 #include <stdlib.h>
 
+//xác dinh so luong tham so cua thu tuc
+// tham tri va tham bien
+
 using namespace std;
 
 int tokens_size = 0;
@@ -13,7 +16,7 @@ int i_number = 0,i_ident = 0;
 TokenType Token;
 
 
-TokenType get_token_parse(int show);
+TokenType get_token_parse();
 void error(string s);
 void factor();
 void term();
@@ -25,7 +28,7 @@ void program();
 
 
 
-TokenType get_token_parse(int show = 1){
+TokenType get_token_parse(){
 	if (i_token<tokens_size){
 		if(tokens[i_token] == NUMBER){
 			cout<<" "<<numbers[i_number]<<" ";
@@ -36,17 +39,22 @@ TokenType get_token_parse(int show = 1){
 			i_ident++;
 		}
 		else{
-			if(show!=0 || tokens[i_token] != SEMICOLON){
-				cout<<" "<<type_words[(int) tokens[i_token]]<<" ";
-				if(tokens[i_token] == SEMICOLON){
-					cout<<endl;
-				}
+			cout<<" "<<type_words[(int) tokens[i_token]]<<" ";
+			if(tokens[i_token] == SEMICOLON){
+				cout<<endl;
 			}
-			
-		}
+		}	
 		return tokens[i_token++];
 	}
 	exit(EXIT_SUCCESS);
+}
+
+string get_ident(){
+	return idents[i_ident-1];
+}
+
+int get_number(){
+	return numbers[i_number-1];
 }
 
 
@@ -60,14 +68,29 @@ void error(string s){
 
 void factor(){
 	if(Token == IDENT){
+		Entry *entry = find_entry(get_ident());
+		if(entry==NULL){
+				error("factor:  scope:  Bien "+get_ident() + "  chua duoc khai bao" );
+		}
+		if(entry->type == TYPE_PROC){
+			error("factor:  scope:   Bien "+get_ident() + "  là procedure, khong the dung trong factor " );
+		}
 		Token = get_token_parse();
 		if(Token == LBRACK){
+			if(entry->is_array == false){
+				error("factor:  scope:   Bien "+get_ident() + "  khong phai la bien kieu array" );
+			}
 			Token = get_token_parse();
 			expression();
 			if(Token == RBRACK){
 				Token = get_token_parse();
 			}else{
 				error("factor: Thieu dau ] ");
+			}
+		}
+		else{
+			if(entry->is_array == true){
+				error("factor:  scope:   Bien "+get_ident() + "  la mot array, khong the dung " );
 			}
 		}
 	}
@@ -126,47 +149,113 @@ void condition(){
 	}
 }
 
-void statement(){
-	
-//	cout<<"Token statement nay  "<<type_words[(int) Token]<<endl;
-	
+void statement(){	
 	
 	if(Token==IDENT){	//variable := <expression>
 		Token =get_token_parse();	//array variable ?
-
+		//scope
+		Entry *entry = find_entry(get_ident());
+		if(entry==NULL){
+			error("statement: IDENT:  scope: Bien "+get_ident() + "  chua duoc khai bao" );
+		}
+		else if(entry->type != TYPE_INT){
+			error("statement:  IDENT:   Ten "+get_ident() + "  khong phai la bien var " );
+		}
 //		else{
-			if(Token == LBRACK){
-				Token = get_token_parse();
-				expression();
-				if(Token==RBRACK){
-					Token = get_token_parse();
-				}else{
-					error("statement: IDENT:  dong ngoac ]");
-				}	
+
+		if(Token == LBRACK){
+			if(entry->is_array == false){
+				error("statement: IDENT:  scope:  Bien "+get_ident() + "  khong phai la bien kieu array" );
 			}
+			Token = get_token_parse();
+			expression();
+			if(Token==RBRACK){
+				Token = get_token_parse();
+			}else{
+				error("statement: IDENT:  dong ngoac ]");
+			}	
+		}
+		else{
+			if(entry->is_array == true){
+				error("statement: IDENT:  scope:  Bien "+get_ident() + " la bien kieu array.  Khong the gan truc tiep" );
+			}
+		}
 //		}
 		
 		if(Token==ASSIGN){
 			Token = get_token_parse();
 			expression();
 		}
-		else error("statement: IDENT:  Thieu toan tu gan");
+		else{
+			error("statement: IDENT:  Thieu toan tu gan");
+		}
 	} 
 	else if (Token == CALL){
 		Token= get_token_parse();
 		if(Token == IDENT){
+			//scope
+			Entry *entry_procedure = find_entry(get_ident());
+			int num_var_call = 0;
+			if(entry_procedure==NULL){
+				error("statement: CALL: scope:   Ten "+get_ident() + "  chua duoc khai bao" );
+			}
+			else if(entry_procedure->type != TYPE_PROC){
+				error("statement: CALL: scope:   Ten "+get_ident() + "  khong phai la procedure" );
+			}
 			Token = get_token_parse();
 			if(Token == LPARENT){
+				int i0 = i_ident;		// xem expression co goi ident nao khong
 				Token = get_token_parse();
 				expression();
+				int i1 = i_ident;
+				if(entry_procedure->procedure_table->entries.size()>num_var_call+1){
+					if(entry_procedure->procedure_table->entries[num_var_call].is_reference){
+						if(i0==i1){
+							error("statement:  CALL:  scope:   Tham so truyen vao khong phai la bien tham chieu");
+						}
+						else{
+							Entry *entry = find_entry(get_ident());
+							if(entry->type != TYPE_INT){
+								error("statement:  CALL:  scope:   Tham so truyen vao khong phai la bien tham chieu 2");
+							}
+						}
+					}
+				}
+				num_var_call +=1;
 				while(Token==COMMA){
+					i0 = i_ident;
 					Token = get_token_parse();
 					expression();
+					i1 = i_ident;
+					
+					if(entry_procedure->procedure_table->entries.size()>num_var_call+1){
+						if(entry_procedure->procedure_table->entries[num_var_call].is_reference){
+							if(i0==i1){
+								error("statement:  CALL:  scope:   Tham so truyen vao khong phai la bien tham chieu");
+							}
+							else{
+								if(i1-i0==1){
+									Entry *entry = find_entry(get_ident());
+									if(entry->type != TYPE_INT){
+										error("statement:  CALL:  scope:   Tham so truyen vao khong phai la bien tham chieu 2");
+									}
+								}
+								else{
+									error("statement:  CALL:  scope:   Tham so truyen vao khong phai la bien tham chieu 3");
+								}
+							}
+						}
+					}
+					num_var_call +=1;
 				}
 				if(Token == RPARENT){
 					Token = get_token_parse();
 				}
 				else error("statement:  CALL: Thieu dau )");
+			}
+			if(num_var_call != entry_procedure->procedure_table->num_var){
+				cout<<"\nProcedure "<<entry_procedure->name<<"  can  "<<entry_procedure->procedure_table->num_var<<" tham so. Truyen vao "<<num_var_call<<" tham so"<<endl;
+				error("statement:  CALL:  scope:   Sai so luong tham so truyen vao procedure");
 			}
 		}
 		else error("statement : CALL:  Thieu ten thu tuc ham");
@@ -216,6 +305,17 @@ void statement(){
 	else if(Token == FOR){
 		Token = get_token_parse();
 		if(Token == IDENT){
+			// scope
+			Entry *entry = find_entry(get_ident());
+			if(entry==NULL){
+				error("statement: FOR:  scope:  Ten "+get_ident() + "  chua duoc khai bao" );
+			}
+			else if(entry->type != TYPE_INT){
+				error("statement: FOR:  scope:  Ten "+get_ident() + "  khong phai la bien nen khong the gan gia tri" );
+			}
+			else if(entry->is_array){
+				error("statement: FOR:  scope:  Ten "+get_ident() + "  la mot mang khong dung duoc trong vong for " );
+			}
 			Token = get_token_parse();
 			if(Token == ASSIGN){
 				Token = get_token_parse();
@@ -249,20 +349,10 @@ void statement(){
 			error("statement : FOR thieu IDENT");
 		}
 	}
-//	else{
-//		error("statement : Khong phai STATEMENT");
-//		return 0;
-//	}
 
-
-//		cout<<"Token cuoi statement nay  "<<type_words[(int) Token]<<endl;
-
-//	return 1;
 } 
 
 void block(){
-	
-//	cout<<"Token block nay  "<<type_words[(int) Token]<<endl;
 	
 	if(Token == CONST){
 		do{
@@ -272,6 +362,12 @@ void block(){
 				if(Token == EQU){
 					Token = get_token_parse();
 					if(Token == NUMBER){
+						//scope
+						if(find_entry(get_ident())!=NULL){
+							error("block: CONST:  scope:  Ten "+get_ident() + "  da duoc khai bao" );
+						}
+						table_add_const(get_ident(),get_number());
+						
 						Token = get_token_parse();	
 						if(Token == SEMICOLON){
 							Token = get_token_parse();	
@@ -302,6 +398,11 @@ void block(){
 					if(Token == NUMBER){
 						Token = get_token_parse();	
 						if(Token == RBRACK){
+							//scope
+							if(find_entry_procedure(get_ident(),current_table)!=NULL){
+								error("block: VAR:  scope:  Ten "+get_ident() + "  da duoc khai bao" );
+							}
+							table_add_var(get_ident(),false,true,get_number());
 							Token = get_token_parse();	
 						}
 						else{
@@ -312,6 +413,13 @@ void block(){
 						error("block: VAR: Thieu gia tri NUMBER");
 					}
 				}
+				else{
+					//scope
+					if(find_entry_procedure(get_ident(),current_table)!=NULL){
+						error("block: VAR:  scope:  Ten "+get_ident() + "  da duoc khai bao 2" );
+					}
+					table_add_var(get_ident(),false,false,0);
+				}
 			}
 			else{
 				error("block: VAR: thieu dinh danh IDENT");
@@ -319,11 +427,6 @@ void block(){
 		}while(Token==COMMA);
 		if(Token == SEMICOLON){
 			Token = get_token_parse();
-			// nhieu dau ; long nhau
-			
-//			do{
-//				Token = get_token_parse(0);
-//			} while(Token == SEMICOLON);
 		}
 		else{
 			error("block: VAR: thieu ;");
@@ -332,21 +435,44 @@ void block(){
 	
 	while(Token == PROCEDURE){		
 		Token = get_token_parse();
+		//scope
+		string procedure_name;
+		int num_var = 0;
 		if (Token==IDENT){
+			//scope
+			if(find_entry(get_ident())!=NULL){
+				error("block: PROCEDURE:  scope:  Ten "+get_ident() + "  da duoc khai bao" );
+			}
+			string procedure_name = get_ident();
+			make_table(procedure_name);		// tao bang moi cho procedure
+			
+			
 			Token = get_token_parse();
+			
+			//scope
+			bool is_reference;
 			
 			if(Token == LPARENT){		//  (
 				do{
 					Token = get_token_parse();
 					if(Token == VAR){
 						Token = get_token_parse();
+						is_reference = true;
 					}
 					if(Token == IDENT){
 						Token = get_token_parse();
+						//scope
+						num_var +=1;
+						if(find_entry_procedure(get_ident(),current_table)!=NULL){
+							error("block: PROCEDURE:  scope:  Ten "+get_ident() + "  da duoc khai bao 2" );
+						}
+						table_add_var(get_ident(),is_reference,false,0);
+						
 					}
 					else{
 						error("block: PROCEDURE: thieu IDENT");
 					}
+					is_reference = false;
 				}while(Token == SEMICOLON);
 				if(Token == RPARENT){
 					Token = get_token_parse();
@@ -357,16 +483,11 @@ void block(){
 				
 			}
 			if(Token == SEMICOLON){
-				// nhieu dau ; long nhau
 				Token = get_token_parse();				
 				
 				block();
 				if(Token == SEMICOLON){				
 					Token = get_token_parse();
-//					do{
-//						Token = get_token_parse(0);
-//					} while(Token == SEMICOLON);
-				
 				
 				}
 				else{
@@ -380,16 +501,13 @@ void block(){
 		else{
 			error("block: PROCEDURE: thieu ten (ident) PROCEDURE");
 		}
+		current_table->num_var = num_var;
+		current_table = current_table->parent;
 	}
 	
 	
 	if(Token == BEGIN){
-		Token = get_token_parse();
-		
-//		if(Token == END){
-//			error("block: BEGIN: thieu statement");		
-//		}
-		
+		Token = get_token_parse();			
 		statement();
 		while(Token == SEMICOLON){			
 
@@ -399,7 +517,17 @@ void block(){
 		if(Token == END){
 			Token = get_token_parse();			
 		}else{
-			error("block: BEGIN: thieu END  hoac cau lenh thieu ;");
+			int i0 = i_token;
+			statement();
+			int i1 = i_token;
+			if(i0 == i1){
+				error("block: BEGIN: thieu END ");
+			}
+			else{
+				i_token = i0;
+				error("block: BEGIN: cau lenh thieu ; ");
+			}
+//			error("block: BEGIN: thieu END  hoac cau lenh thieu ;");
 		}
 	}
 	else{
@@ -412,6 +540,10 @@ void program(){
 	if(Token==PROGRAM){
 		Token = get_token_parse();
 		if (Token==IDENT){
+			//scope
+			init_table(get_ident());
+			
+			
 			Token = get_token_parse();
 			if(Token==SEMICOLON){
 				Token = get_token_parse();
