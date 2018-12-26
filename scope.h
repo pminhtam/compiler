@@ -34,16 +34,24 @@ struct Entry{
 struct Table{
 	string name;
 	Table *parent;
+	int procedure_addr;
 	int mem_size;
 	vector<Entry> entries;
 	int num_var;		// so luong parameter trong mot procedure
 };
+
+struct FindResult{
+	Entry *entry;
+	int depth;	
+};
+
+
 void init_table(string name);
 void make_table(string name);
 void table_add_var(string name, bool is_reference,bool is_array,int arr_size);
 void table_add_const(string name,int const_val);
 void table_add_proc(string name,Table* table);
-Entry *find_entry(string name);
+FindResult find_entry(string name);
 Entry *find_entry_procedure(string name,Table *table);
 
 
@@ -54,6 +62,7 @@ void init_table(string name){
 	root_table = new Table();
 	root_table->name = name;
 	root_table->parent == NULL;
+	root_table->mem_size = 4;
 	current_table = root_table;
 }
 
@@ -61,6 +70,7 @@ void make_table(string name){
 	Table* table = new Table();
 	table->parent = current_table;
 	table->name = name;
+	table->mem_size = 4;			// 4 thanh ghi dac biet
 	table_add_proc(name,table);
 //	cout<<"cha la  "<<table->parent->name<<endl;
 	current_table = table;
@@ -75,9 +85,9 @@ void table_add_var(string name, bool is_reference,bool is_array,int arr_size){
 	e.arr_size = arr_size;
 	e.offset = current_table->mem_size;
 	if (is_array) 
-        current_table->mem_size += arr_size * 4;
+        current_table->mem_size += arr_size * 1;
     else
-        current_table->mem_size += 4;
+        current_table->mem_size += 1;
     current_table->entries.push_back(e);
 }
 
@@ -104,24 +114,31 @@ void table_add_proc(string name,Table* table){
 }
 
 
-Entry *find_entry(string name){
+FindResult find_entry(string name){
 	Table *table = current_table;
+	int depth = 0;
+	FindResult result;
 	while(table != NULL){
 		for(int i = 0;i<table->entries.size();i++){
 //			cout<<table->entries[i].name<<endl;
 			if(name == table->entries[i].name){
-				return &table->entries[i];
+				result.entry = &table->entries[i];
+				result.depth = depth;
+				return result;
 			}
 		}
 		table = table->parent;
+		depth +=1;
 	}
-	return NULL;
+	result.entry = NULL;
+	return result;
 }
 
 Entry *find_entry_procedure(string name,Table *table ){
 	for(int i = 0;i<table->entries.size();i++){
 		if(name == table->entries[i].name){
 //			cout<<"Dang tim bang"<<table->name<<endl;
+			
 			return &table->entries[i];
 		}
 	}

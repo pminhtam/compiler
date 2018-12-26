@@ -5,7 +5,7 @@
 //#include "scanning.h"
 #include "scope.h"
 #include "parser2.h"
-
+#include "may_ao.h"
 
 
 using namespace std;
@@ -22,6 +22,11 @@ int main(int argc, char **args){
 
 	program();
 
+show_instruction(1000);
+
+cout<<"\n ==============================================="<<endl;
+cout<<"Ket qua chay tren may ao "<<endl;
+intepreter(Code);
 
 }
 
