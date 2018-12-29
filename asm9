@@ -1,0 +1,19 @@
+program asd;
+const b = 10;
+var x,i,k;
+procedure giaithua(n);
+begin
+	
+	for i:=1 to n do
+	begin
+		x:=x*i;
+	end;
+
+end;
+begin 
+	i:=0;
+	x:=1;
+	call readi(k);
+	call giaithua(k);
+	call writei(x);
+end.

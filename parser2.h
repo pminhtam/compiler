@@ -334,7 +334,10 @@ void statement(){
 			}
 			else{
 				asm_INT(4);
+				
 				FindResult result_entry_procedure = find_entry(get_ident());
+				
+				
 				int num_var_call = 0;
 				if(result_entry_procedure.entry==NULL){
 					error("statement: CALL: scope:   Ten "+get_ident() + "  chua duoc khai bao" );
@@ -682,6 +685,9 @@ void block(){
 				Token = get_token_parse();				
 				
 				block();
+				
+				asm_EP();
+				
 				if(Token == SEMICOLON){				
 					Token = get_token_parse();
 				

@@ -1,0 +1,13 @@
+program asd;
+const b = 10;
+var x,i,k;
+begin 
+	i:=0;
+	x:=1;
+	call readi(k);
+	for i:=1 to k do
+	begin
+		x:=x*i;
+	end;
+	call writei(x);
+end.
