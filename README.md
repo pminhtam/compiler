@@ -5,7 +5,7 @@ This project is a toy compiler which compile from PL\0 language to assembly lang
 
 [PL\0](https://en.wikipedia.org/wiki/PL/0) is [LL](https://en.wikipedia.org/wiki/LL_grammar) (1) language which just need to lookahead **1** tokens to decide what to do with the current token.
 
-# Complie project 
+# Compile and run project 
 ```
 g++ *.cpp -o main || g++ main.cpp -o main
 ```
