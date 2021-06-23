@@ -131,4 +131,6 @@ Struct follow by
 ![alt text](images/asm5.png)
 
 
+## Virtual machine 
 
+File ```may_ao.py``` is a virtual machine which can run assembly code from compiler. 
