@@ -1,4 +1,6 @@
 *.exe
-
+**/__pycache__/
+.*
+!.gitignore
 *.txt
 *.gch
